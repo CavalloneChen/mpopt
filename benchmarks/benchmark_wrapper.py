@@ -3,11 +3,14 @@ import sys
 import numpy as np
 import torch
 
-sys.path.append("/home/lyf/projects/benchmarks/cec2013")
+
+current_path = os.path.dirname(__file__)
+
+sys.path.append(os.path.join(current_path, "./cec2013"))
 import cec13
-sys.path.append("/home/lyf/projects/benchmarks/cec2017")
+sys.path.append(os.path.join(current_path, "./cec2017"))
 import cec17
-sys.path.append("/home/lyf/projects/benchmarks/cec2020")
+sys.path.append(os.path.join(current_path, "./cec2020"))
 import cec20
 
 def func_wrapper(func, func_id):
