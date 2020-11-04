@@ -1,11 +1,15 @@
+#!/usr/bin/env python
+""" Define the class for benchmark.
+
+Unify multiple benchmark and is used to generate 'Evaluator'
+"""
+
 import os
 import sys
 import numpy as np
-import torch
-
+from mpopt.tools.objective import ObjFunction, Evaluator
 
 current_path = os.path.dirname(__file__)
-
 sys.path.append(os.path.join(current_path, "./cec2013"))
 import cec13
 sys.path.append(os.path.join(current_path, "./cec2017"))
@@ -13,82 +17,60 @@ import cec17
 sys.path.append(os.path.join(current_path, "./cec2020"))
 import cec20
 
-def func_wrapper(func, func_id):
+class Benchmark(object):
+    """ Class for benchmark.
 
-    def wrapped(x):
-        
-        origin_type = type(x)
-        if origin_type is not list:
-            origin_shape = x.shape
-            dim = origin_shape[-1]
-        
-            if origin_type is torch.Tensor:
-                x = x.cpu().numpy()
-            x = x.reshape((-1, dim)).tolist()
+    Use benchmark.generate to get a 'Evaluator' for optimization.
 
-        if func == "cec13":
-            tmp = cec13.eval(x, func_id+1)
-        elif func == "cec17":
-            tmp = cec17.eval(x, func_id+1)
-        elif func == "cec20":
-            tmp = cec20.eval(x, func_id+1)
-        else:
-            raise Exception("No such benchmark!")
-        
-        if origin_type is np.ndarray:
-            return np.array(tmp).reshape(origin_shape[:-1])
-        elif origin_type is torch.Tensor:
-            return torch.tensor(tmp).reshape(origin_shape[:-1])
-        elif type(x) is list and type(x[0]) is list:
-            return tmp
-        else:
-            return tmp[0]
-
-    return wrapped
-
-
-class Evaluator(object):
-
+    Currently support 'CEC13', 'CEC17', 'CEC20'
+    """
     def __init__(self, benchmark):
-        
+        """ Init objective functions from benchmark
+        """
         if benchmark == 'CEC13':
-            self.func = [func_wrapper("cec13", func_id) for func_id in range(28)]
-            self.func_num = 28
-        elif benchmark == 'CEC17':
-            self.func = [func_wrapper("cec17", func_id) for func_id in range(30)]
-            self.func_num = 30
-        elif benchmark == 'CEC20':
-            self.func = [func_wrapper("cec20", func_id) for func_id in range(10)]
-            self.func_num = None
-        else:
-            raise Exception("Benchmark")
+            self.num_func = 28
+            self.funcs = [self.wrap_func(cec13.eval, func_id+1) for func_id in range(self.num_func)] 
+            self.bias = list(range(-1400, 0, 100)) + list(range(100, 1500, 100))
+            self.lb = -100
+            self.ub = 100
 
-    def init(self, func_id=None, trace=False):
-        self.func_id = func_id
-        self.num_eval = 0
-        self.num_batch = 0
-        self.best_idv = None
-        self.best_fit = None
-        
-        self.record_trace = trace
-        self.trace = []
-    
-    def __call__(self, x, func_id=None):
-        if self.func_id is None:
-            raise Exception("No function id is given")
-        
-        ans = self.func[self.func_id](x)
-        
-        # record update
-        self.num_eval += x.shape[0]
-        self.num_batch += 1
-        
-        if self.best_fit is None or min(ans) < self.best_fit:
-            min_idx = np.argmin(ans)
-            self.best_idv = x[min_idx, :]
-            self.best_fit = ans[min_idx]
-        
-        if self.record_trace:
-            self.trace.append([self.num_eval, self.best_idv, self.best_fit])
-        
-        return ans
+            self.dim2eval = {}
+            for dim in [2,5,10,20,30,40,50,60,70,80,90,100]:
+                self.dim2eval[dim] = dim * 10000
+
+        elif benchmark == 'CEC17':
+            self.num_func = 30
+            self.funcs = [self.wrap_func(cec17.eval, func_id+1) for func_id in range(self.num_func)] 
+            self.bias = list(range(-1400, 0, 100)) + list(range(100, 1500, 100))
+            self.lb = -100
+            self.ub = 100
+
+            self.dim2eval = {}
+            for dim in [2,10,20,30,50,100]:
+                self.dim2eval[dim] = dim * 10000
+
+        elif benchmark == 'CEC20':
+            self.num_func = 10
+            self.funcs = [self.wrap_func(cec20.eval, func_id+1) for func_id in range(self.num_func)] 
+            self.bias = [100, 1100, 700, 1900, 1700, 1600, 2100, 2200, 2400, 2500]
+            self.lb = -100
+            self.ub = 100
+
+            self.dim2eval = {}
+            self.dim2eval[5] = 50000    
+            self.dim2eval[10] = 1000000
+            self.dim2eval[15] = 3000000
+            self.dim2eval[20] = 10000000
+
+        else:
+            raise Exception('Benchmark not Implemented.')
+
+    def generate(self, func_id, dim, traj_mod=0):
+        obj = ObjFunction(self.funcs[func_id], dim=dim, lb=self.lb, ub=self.ub, optimal_val=self.bias[func_id])
+        evaluator = Evaluator(obj, max_eval=self.dim2eval[dim], traj_mod=traj_mod)
+        return evaluator
+
+    def wrap_func(self, func, func_id):
+        def wrapped_obj(X):
+            return func(X, func_id)
+        return wrapped_obj

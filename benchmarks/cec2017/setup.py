@@ -1,19 +1,15 @@
-#! /usr/bin/env python
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Build import cythonize
 
-"""
-setup.py file for SWIG CEC2017 benchmark
-"""
-
-from distutils.core import setup, Extension
-
-cec17_module = Extension('_cec17',
-                         sources=['cec17_wrap.c', 'cec17.c'],
-                        )
-
-setup(name = 'cec17',
-      version = '1.0',
-      author = 'Yifeng Li',
-      description = 'CEC2017 benchmark functions for bound-constrained single-objective optimization.',
-      ext_modules = [cec17_module],
-      py_modules = ['cec17'],
-     )
+cec17_extension = Extension(
+    name="cec17",
+    sources=["cec17.pyx"],
+    libraries=["cec17"],
+    library_dirs=["lib"],
+    include_dirs=["lib"]
+)
+setup(
+    name="cec17",
+    ext_modules=cythonize([cec17_extension])
+)

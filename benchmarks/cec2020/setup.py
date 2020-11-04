@@ -1,19 +1,15 @@
-#! /usr/bin/env python
+from distutils.core import setup
+from distutils.extension import Extension
+from Cython.Build import cythonize
 
-"""
-setup.py file for SWIG CEC2020 benchmark
-"""
-
-from distutils.core import setup, Extension
-
-cec20_module = Extension('_cec20',
-                         sources=['cec20_wrap.c', 'cec20.c'],
-                        )
-
-setup(name = 'cec20',
-      version = '1.0',
-      author = 'Yifeng Li',
-      description = 'CEC2020 benchmark functions for bound-constrained single-objective optimization.',
-      ext_modules = [cec20_module],
-      py_modules = ['cec20'],
-     )
+cec20_extension = Extension(
+    name="cec20",
+    sources=["cec20.pyx"],
+    libraries=["cec20"],
+    library_dirs=["lib"],
+    include_dirs=["lib"]
+)
+setup(
+    name="cec20",
+    ext_modules=cythonize([cec20_extension])
+)

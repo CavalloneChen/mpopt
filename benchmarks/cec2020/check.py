@@ -1,3 +1,6 @@
+import numpy as np
 import cec20
-ans = cec20.eval([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]], 1)
-print(ans)
+
+a = np.random.uniform(-100, 100, [10, 30])
+tmp = cec20.eval(a, 1)
+print(tmp)
