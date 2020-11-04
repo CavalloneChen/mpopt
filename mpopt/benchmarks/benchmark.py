@@ -34,8 +34,9 @@ class Benchmark(object):
             self.lb = -100
             self.ub = 100
 
+            self.dims = [2,5,10,20,30,40,50,60,70,80,90,100]
             self.dim2eval = {}
-            for dim in [2,5,10,20,30,40,50,60,70,80,90,100]:
+            for dim in self.dims:
                 self.dim2eval[dim] = dim * 10000
 
         elif benchmark == 'CEC17':
@@ -45,8 +46,9 @@ class Benchmark(object):
             self.lb = -100
             self.ub = 100
 
+            self.dims = [2,10,20,30,50,100]
             self.dim2eval = {}
-            for dim in [2,10,20,30,50,100]:
+            for dim in self.dims:
                 self.dim2eval[dim] = dim * 10000
 
         elif benchmark == 'CEC20':
@@ -56,6 +58,7 @@ class Benchmark(object):
             self.lb = -100
             self.ub = 100
 
+            self.dims = [5, 10, 15, 20]
             self.dim2eval = {}
             self.dim2eval[5] = 50000    
             self.dim2eval[10] = 1000000
