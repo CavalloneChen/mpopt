@@ -12,7 +12,7 @@ def test_benchmark():
     bcs = [Benchmark('CEC13'), Benchmark('CEC17'), Benchmark('CEC20')]
 
     # testing parameters
-    repetition = 200
+    repetition = 100
     batch_size = 300
 
     for idx in range(3):
@@ -35,7 +35,7 @@ def test_benchmark():
 
                 t2 = time.time()
 
-                print("{}. Dim: {}, Func_id: {}, SingleSolution, AveSampleTime: {}, AveEvalTime: {}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
+                print("{}. Dim: {}, Func_id: {}, SingleSolution, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
 
                 #### test of batch evaluation
                 t0 = time.time()
