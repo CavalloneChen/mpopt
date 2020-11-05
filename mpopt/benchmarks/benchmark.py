@@ -4,18 +4,12 @@
 Unify multiple benchmark and is used to generate 'Evaluator'
 """
 
-import os
-import sys
-import numpy as np
-from mpopt.tools.objective import ObjFunction, Evaluator
 
-current_path = os.path.dirname(__file__)
-sys.path.append(os.path.join(current_path, "./cec2013"))
-import cec13
-sys.path.append(os.path.join(current_path, "./cec2017"))
-import cec17
-sys.path.append(os.path.join(current_path, "./cec2020"))
-import cec20
+import numpy as np
+from ..tools.objective import ObjFunction, Evaluator
+from .cec2013 import cec13
+from .cec2017 import cec17
+from .cec2020 import cec20
 
 class Benchmark(object):
     """ Class for benchmark.
@@ -69,6 +63,12 @@ class Benchmark(object):
             raise Exception('Benchmark not Implemented.')
 
     def generate(self, func_id, dim, traj_mod=0):
+        
+        if func_id < 0 or func_id >= self.num_func:
+            raise Exception("Function id out of range.")
+        if dim not in self.dims:
+            raise Exception("Solution dimension not supported.")
+
         obj = ObjFunction(self.funcs[func_id], dim=dim, lb=self.lb, ub=self.ub, optimal_val=self.bias[func_id])
         evaluator = Evaluator(obj, max_eval=self.dim2eval[dim], traj_mod=traj_mod)
         return evaluator

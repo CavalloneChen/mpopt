@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Class defination for objective function and evaluator.
+""" Tools for objective function and evaluator.
 
 Class:
 ======
@@ -19,7 +19,7 @@ class ObjFunction(object):
     Manage an callable numeric objective function and important information for optimization.
     """
     def __init__(self, 
-                 func,              # callable objective function 
+                 func,              # callable objective function
                  dim=None,          # dim of solution. If None, accept any solution dim. 
                  lb=-float('inf'),  # lower bound (scalar or ndarray)
                  ub=float('inf'),   # upper bound (scalar or ndarray)
@@ -45,11 +45,11 @@ class ObjFunction(object):
     def _preprocessing(self, X):
         """Check and prepare input solution. """
         if X.ndim == 1:
-            x = x.reshape((1, -1))
+            X = X.reshape((1, -1))
         out_bound = np.any(np.bitwise_or(X < self.lb, X > self.ub))
         if out_bound:
             raise Exception("Solution out of bound.")
-        return x
+        return X
 
 class Evaluator(object):
     """Evaluator for optimization.
@@ -92,7 +92,7 @@ class Evaluator(object):
         y = self.obj(X)
         if X.ndim == 1:
             # single solution evaluated
-            if y < self.cur_y:
+            if self.cur_y is None or y < self.cur_y:
                 self.cur_x = X
                 self.cur_y = y
             
@@ -108,7 +108,7 @@ class Evaluator(object):
             min_x = X[min_idx,:]
             min_y = y[min_idx]
 
-            if min_y < self.cur_y:
+            if self.cur_y is None or min_y < self.cur_y:
                 self.cur_x = min_x
                 self.cur_y = min_y
             

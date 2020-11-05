@@ -4,9 +4,10 @@
 
 import time
 import numpy as np
-from ..benchmarks.benchmark import Benchmark
+from mpopt.benchmarks.benchmark import Benchmark
 
-if __name__ == '__main__':
+
+def test_benchmark():
     bcn = ['CEC13', 'CEC17', 'CEC20']
     bcs = [Benchmark('CEC13'), Benchmark('CEC17'), Benchmark('CEC20')]
 
@@ -26,7 +27,7 @@ if __name__ == '__main__':
                 t0 = time.time()
                 samples = []
                 for rep in range(repetition):
-                    samples.append(np.random.uniform(bc.lb, bc.ub, ()))
+                    samples.append(np.random.uniform(bc.lb, bc.ub, (dim,)))
 
                 t1 = time.time()
                 for rep in range(repetition):
@@ -48,4 +49,8 @@ if __name__ == '__main__':
 
                 t2 = time.time()
 
-                print("{}. Dim: {}, Func_id: {}, BatchSolutions, AveSampleTime: {}, AveEvalTime: {}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
+                print("{}. Dim: {}, Func_id: {}, BatchSolutions, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
+
+
+if __name__ == '__main__':
+    test_benchmark()
