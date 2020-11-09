@@ -34,7 +34,7 @@ void ceval(double *x, int nx, int mx, double *f, int func_num, char *path)
 			ini_flag=0;
 		}
 	}
-	
+
 	if (ini_flag==0)
 	{
 		FILE *fpt;
@@ -156,15 +156,7 @@ void ceval(double *x, int nx, int mx, double *f, int func_num, char *path)
 			strcpy(Path, path);
 			sprintf(FileName, strcat(Path, "/input_data/shuffle_data_%d_D%d.txt"), func_num, nx);
 			fpt = fopen(FileName,"r");
-			if (fpt==NULL)/*EC14 Test Function Suite
-  Jane Jing Liang (email: liangjing@zzu.edu.cn)
-  Dec. 20th 2013
-  1. Run the following command in Matlab window:
-  mex cec17_func.cpp -DWINDOWS
-  2. Then you can use the test functions as the following example:
-  f = cec17_func(x,func_num);
-  Here x is a D*pop_size matrix.
-*/
+			if (fpt==NULL)
 			{
 				printf("\n Error: Cannot open input file for reading \n");
 			}
@@ -184,7 +176,7 @@ void ceval(double *x, int nx, int mx, double *f, int func_num, char *path)
 		ini_flag=1;
 		//printf("Function has been initialized!\n");
  	}
-
+	
 	for (i = 0; i < mx; i++)
 	{
 		switch(func_num)
@@ -316,7 +308,7 @@ void ceval(double *x, int nx, int mx, double *f, int func_num, char *path)
 		}
 
 	}
-
+	
 }
 
 void sphere_func (double *x, double *f, int nx, double *Os, double *Mr, int s_flag, int r_flag) /* Sphere */

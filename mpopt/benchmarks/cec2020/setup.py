@@ -7,9 +7,6 @@ cec20_extension = Extension(
     sources=["cec20.pyx"],
     libraries=["cec20"],
     library_dirs=["lib"],
-    include_dirs=["lib"]
+    include_dirs=["lib"],
 )
-setup(
-    name="cec20",
-    ext_modules=cythonize([cec20_extension])
-)
+setup(name="cec20", ext_modules=cythonize([cec20_extension]))
