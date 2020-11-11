@@ -7,6 +7,7 @@ import json
 import argparse
 import importlib
 import numpy as np
+from functools import wraps
 from multiprocessing import Pool
 
 from mpopt.benchmarks.benchmark import Benchmark
@@ -17,15 +18,17 @@ def parsing():
     parser = argparse.ArgumentParser(description="Benchmark testing for SIOA")
 
     # benchmark params
-    parser.add_argument("--bechmark", "-b", help="Benchmark name")
-    parser.add_argument("--dim", "-d", help="Benchmark dimension")
+    parser.add_argument("--benchmark", "-b", help="Benchmark name")
+    parser.add_argument("--dim", "-d", type=int, help="Benchmark dimension")
 
     # agortihm params
     parser.add_argument("--alg", "-a", help="Algorithm name")
 
     # testing params
     parser.add_argument("--name", "-n", default="", help="Name of experiment")
-    parser.add_argument("--rep", "-r", default=1, help="Repetition of each problem")
+    parser.add_argument(
+        "--rep", "-r", default=1, type=int, help="Repetition of each problem"
+    )
     parser.add_argument(
         "--multiprocess",
         "-m",
@@ -41,6 +44,22 @@ def parsing():
     parser.add_argument("--alpha", default=0.05, type=float, help="Significant Level")
 
     return parser.parse_args()
+
+
+def logging(opt):
+    @wraps(opt)
+    def opt_with_logging(func_id):
+        start = time.time()
+        optimal = opt(func_id)
+        end = time.time()
+        print(
+            "Prob.{:<4}, res:{:.4e},\t time:{:.3f}".format(
+                func_id + 1, optimal, end - start
+            )
+        )
+        return optimal, end - start
+
+    return opt_with_logging
 
 
 if __name__ == "__main__":
@@ -61,59 +80,57 @@ if __name__ == "__main__":
         if param in args:
             params[param] = args[param]
 
-    # set params
-    optimizer.set_params(params)
+    # opt function
+    @logging
+    def opt(idx):
+        evaluator = benchmark.generate(idx)
+        optimizer = model()
+        optimizer.set_params(params)
+        return optimizer.opt(evaluator)
 
     # store results
-    res = np.empty((benchmark.num_func, args.repetition))
-    cst = np.empty((benchmark.num_func, args.repetition))
+    res = np.empty((benchmark.num_func, args.rep))
+    cst = np.empty((benchmark.num_func, args.rep))
 
     for i in range(benchmark.num_func):
-        # multiprocessing
         if args.multiprocess > 1:
+            # multiprocessing
             p = Pool(args.multiprocess)
-            evaluators = [benchmark.generate(i) for _ in range(args.rep)]
-            results = p.map(optimizer.opt, evaluators)
+            results = p.map(opt, [i] * args.rep)
             p.close()
             p.join()
 
             for j in range(args.rep):
                 res[i, j], cst[i, j] = results[j][0], results[j][1]
-                print(
-                    "Prob.{:<4}, res:{:.4e},\t time:{:.3f}".format(
-                        i + 1, res[i, j], cst[i, j]
-                    )
-                )
+
         else:
             # sequential
             for j in range(args.rep):
-                evaluator = benchmark.generate(i)
-                res[i, j], cst[i, j] = optimizer.opt(evaluator)
-                print(
-                    "Prob.{:<4}, res:{:.4e},\t time:{:.3f}".format(
-                        i + 1, res[i, j], cst[i, j]
-                    )
-                )
+                res[i, j], cst[i, j] = opt(i)
 
     # save
     info = {}
-    info["benchmark"] = benchmark.__dict__
-    info["optimizer"] = optimizer.__dict__
+    info["args"] = vars(args)
+    info["params"] = params
     info["optimals"] = res.tolist()
     info["times"] = cst.tolist()
 
+    if args.name is not '':
+        args.name = '_' + args.name
     dir_path = os.path.split(os.path.realpath(__file__))[0]
     with open(
-        os.path.join(
-            dir_path,
-            "../logs/"
-            + benchmark.name
-            + "D"
-            + str(benchmark.dim)
-            + "/"
-            + args.alg
-            + "_"
-            + args.name,
+        os.path.abspath(
+            os.path.join(
+                dir_path,
+                "../logs/"
+                + benchmark.name
+                + "_"
+                + str(benchmark.dim)
+                + "D/"
+                + args.alg
+                + args.name
+                + ".json",
+            )
         ),
         "w",
     ) as f:

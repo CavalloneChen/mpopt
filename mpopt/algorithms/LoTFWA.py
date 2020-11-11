@@ -7,55 +7,74 @@ EPS = 1e-8
 class LoTFWA(object):
 
     def  __init__(self):
-        # Parameters
+        # Definition of all parameters and states
 
-        # params of method
-        self.fw_size = None       # num of fireworks
-        self.sp_size = None       # total spark size
-        self.init_amp = None      # initial dynamic amplitude
-        self.gm_ratio = None      # ratio for top sparks in guided mutation
-
-        # params of problem
+        # evaluator
         self.evaluator = None
-        self.dim = None
-        self.upper_bound = None
-        self.lower_bound = None
 
-        self.max_iter = None
-        self.max_eval = None
+        # params
+        self.fw_size = None
+        self.sp_size = None
+        self.init_amp = None
+        self.gm_ratio = None
 
-        # for inspection
-        self.time = None
-        self.info = None
+        # states
+        self.pos = None
+        self.fit = None
 
-    def load_prob(self,   
-                  # params for prob
-                  evaluator = None,
-                  dim = 2,
-                  upper_bound = 100,
-                  lower_bound = -100,
-                  max_eval = 20000,
-                  # params for method
-                  fw_size = 5,
-                  sp_size = 300,
-                  init_amp = 200,
-                  gm_ratio = 0.2,):
+        # load default params
+        self.set_params(self.default_params())
 
-        # load params
-        self.evaluator = evaluator
-        self.dim = dim
-        self.upper_bound = upper_bound
-        self.lower_bound = lower_bound
+        # init states
+        self.init_state()
 
-        self.max_eval = max_eval
+    def default_params(self, benchmark=None):
+        params = {}
+        params['fw_size'] = 5
+        params['sp_size'] = 300 if benchmark is None else 10*benchmark.dim
+        params['init_amp'] = 200 if benchmark is None else benchmark.ub - benchmark.lb
+        params['gm_ratio'] = 0.2
+        return params
+    
+    def set_params(self, params):
+        for param in params:
+            setattr(self, param, params[param])
 
-        self.fw_size = fw_size
-        self.sp_size = sp_size
-        self.gm_ratio = gm_ratio
-        self.init_amp = init_amp
-
+    def init_state(self):
         # init random seed
-        np.random.seed(int(os.getpid()*time.clock()))
+        self.seed = int(os.getpid()*time.clock())
+
+    def opt(self, e):
+        self.init_state()
+        self.__init_fireworks(e)
+
+        while not e.terminate():
+            
+            # allocate sparks
+            num_sparks = [int(self.sp_size / self.fw_size)]*self.fw_size
+
+            # explode
+            sp = self.__explode(num_sparks)
+            sf = e(sp)
+
+            # mutate
+            mp = self.__mutate(sp)
+            mf = e(mp)
+
+            # select
+            n_pos, n_fit = self.__select([self.pos, self.fit], [sp, sf], [mp, mf])
+            
+            
+            
+    def __init_fireworks(self, e):
+        self.pop = np.random.uniform(e.lb, e.ub, [self.fw_size, e.dim])
+        self.fit = e(self.pop)
+
+    def __explode(self, num_sparks):
+        pass
+
+    def __mutate(self):
+        pass
 
     def run(self):
         # running time
