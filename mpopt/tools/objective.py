@@ -58,9 +58,22 @@ class ObjFunction(object):
             y (np.ndarray): 1d array.
         """
 
-        if not isinstance(X, np.ndarray) or X.ndim != 2:
+        # handling input
+        try:
+            _X = np.array(X)
+        except:
+            raise Exception("ObjFunc Solution Error: Input cannot be converted to np.ndarray.")
+
+        if _X.ndim > 2:
             raise Exception("ObjFunc Solution Error: Only support 2d np.ndarray input.")
         
+        if _X.ndim == 1:
+            if self.dim is not None:
+                _X = _X.reshape(-1, self.dim)
+            else:
+                _X = _X.reshape(-1, 1)
+        
+        # call func
         if self.batch:
             y = self.func(X, **self.func_params)
         else:
@@ -84,6 +97,8 @@ class Evaluator(object):
         # states
         self.cur_x = None  # current best solution
         self.cur_y = None  # current best value
+        self.best_x = None
+        self.best_y = None
         self.num_eval = 0
         self.num_batch = 0
 
@@ -145,8 +160,17 @@ class Evaluator(object):
         return y
 
     def terminate(self):
+        stop = False
+        
+        # stop conditions
         if self.max_eval > 0 and self.num_eval >= self.max_eval:
-            return True
+            stop = True
         if self.max_batch > 0 and self.num_batch >= self.max_batch:
-            return True
-        return False
+            stop = True
+        
+        # stop states
+        if stop:
+            self.best_x = self.cur_x
+            self.best_y = self.cur_y
+        
+        return stop
