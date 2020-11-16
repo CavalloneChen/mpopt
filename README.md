@@ -2,21 +2,21 @@
 
 [![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-''mpopt'' is a flexible framework for complex optimization tasks by managing multiple populations.
+'mpopt' is a flexible framework for complex optimization tasks by managing multiple populations.
 
-**Note:** We only consider **Continuous**, **Black-Box**, **Minimization** optimization problems.
+> **Note:** We only consider **Continuous**, **Black-Box**, **Minimization** optimization problems.
 
 The repository contains:
 
-    - 1. Basic operators used in [EA](#definations)s and [SIOA](#definations)s.
+1. Basic operators used in [EA](#definitions)s and [SIOA](#definitions)s.
 
-    - 2. Methods and examples for designing populations.
+2. Methods and examples for designing populations.
 
-    - 3. Methods and examples for designing optimization algorithms with population.
+3. Methods and examples for designing optimization algorithms with population.
 
-    - 4. A new objective function interface and some pre-compiled benchmarks.
+4. A new objective function interface and some pre-compiled benchmarks.
 
-    - 5. Analysis tools for optimization results.
+5. Analysis tools for optimization results.
 
 This repository is inspired from the framework of Fireworks Algorithm ([FWA](https://www.cil.pku.edu.cn/fwa/index.htm)). At present, it is mainly used in FWA-related research and applications.
 
@@ -32,17 +32,17 @@ This repository is inspired from the framework of Fireworks Algorithm ([FWA](htt
 
 ## Background
 
-''mpopt'' is motivated by the research in [FWA](https://link.springer.com/content/pdf/10.1007/978-3-642-13495-1_44.pdf), in which multiple population called fireworks are maintained for optimization. We believe that such kind of multi-population based optimization framework is of great significance in future research. Currently, we are also trying to prove its superiority theoritically.
+'mpopt' is motivated by the research of [FWA](https://link.springer.com/content/pdf/10.1007/978-3-642-13495-1_44.pdf), in which multiple population called fireworks are maintained for optimization. This optimization framework is of great significance in future research and application. The aim of this repository is to provide a complete set of toolkits for designing, benchmarking and applying those methods.
 
-> A lot of the latest information on FWA can be found at [here](https://www.cil.pku.edu.cn/fwa/index.htm).
+A lot of the latest information on FWA can be found at [here](https://www.cil.pku.edu.cn/fwa/index.htm).
 
 ## Install
 
-''numpy'' is required for this repository.
+'numpy' is required for this repository.
 
-To install, run the following commands:
+To install 'mpopt', run the following commands:
 
-```
+```sh
 git clone git@github.com:CavalloneChen/mpopt.git
 cd mpopt
 python3 setup.py install
