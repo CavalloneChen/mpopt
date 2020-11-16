@@ -32,7 +32,7 @@ class Benchmark(object):
 
             self.num_func = 28
             self.funcs = [
-                self.wrap_func(cec13.eval, func_id + 1)
+                self.obj_wrapper(cec13.eval, func_id + 1)
                 for func_id in range(self.num_func)
             ]
             self.bias = np.array(list(range(-1400, 0, 100)) + list(range(100, 1500, 100)))
@@ -46,7 +46,7 @@ class Benchmark(object):
             
             self.num_func = 30
             self.funcs = [
-                self.wrap_func(cec17.eval, func_id + 1)
+                self.obj_wrapper(cec17.eval, func_id + 1)
                 for func_id in range(self.num_func)
             ]
             self.bias = np.arange(100, 3100, 100)
@@ -65,7 +65,7 @@ class Benchmark(object):
 
             self.num_func = 10
             self.funcs = [
-                self.wrap_func(cec20.eval, func_id + 1)
+                self.obj_wrapper(cec20.eval, func_id + 1)
                 for func_id in range(self.num_func)
             ]
             self.bias = np.array([100, 1100, 700, 1900, 1700, 1600, 2100, 2200, 2400, 2500])
@@ -82,6 +82,7 @@ class Benchmark(object):
 
         obj = ObjFunction(
             self.funcs[func_id],
+            batch=True,
             dim=self.dim,
             lb=self.lb,
             ub=self.ub,
@@ -90,8 +91,7 @@ class Benchmark(object):
         evaluator = Evaluator(obj, max_eval=self.max_eval, traj_mod=traj_mod)
         return evaluator
 
-    def wrap_func(self, func, func_id):
-        def wrapped_obj(X):
+    def obj_wrapper(self, func, func_id):
+        def obj_wrapped(X):
             return func(X, func_id)
-
-        return wrapped_obj
+        return obj_wrapped

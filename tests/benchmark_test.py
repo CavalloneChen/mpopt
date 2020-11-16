@@ -8,18 +8,20 @@ from mpopt.benchmarks.benchmark import Benchmark
 
 
 def test_benchmark():
-    bcn = ["CEC13", "CEC17", "CEC20"]
-    bcs = [Benchmark("CEC13"), Benchmark("CEC17"), Benchmark("CEC20")]
 
     # testing parameters
     repetition = 100
     batch_size = 300
 
-    for idx in range(3):
-        name = bcn[idx]
-        bc = bcs[idx]
+    for name in ['CEC13', 'CEC17', 'CEC20']:
+        if name == 'CEC20':
+            dims = [10, 15, 20]
+        else:
+            dims = [30, 50, 100]
 
-        for dim in bc.dims:
+        for dim in dims:
+            bc = Benchmark(name, dim)
+
             for func_id in range(bc.num_func):
 
                 evaluator = bc.generate(func_id, dim)

@@ -50,14 +50,15 @@ def logging(opt):
     @wraps(opt)
     def opt_with_logging(func_id):
         start = time.time()
-        optimal = opt(func_id)
+        val = opt(func_id)
         end = time.time()
+
         print(
             "Prob.{:<4}, res:{:.4e},\t time:{:.3f}".format(
-                func_id + 1, optimal, end - start
+                func_id + 1, val, end - start
             )
         )
-        return optimal, end - start
+        return val, end - start
 
     return opt_with_logging
 
@@ -86,7 +87,7 @@ if __name__ == "__main__":
         evaluator = benchmark.generate(idx)
         optimizer = model()
         optimizer.set_params(params)
-        return optimizer.opt(evaluator)
+        return optimizer.optimize(evaluator)
 
     # store results
     res = np.empty((benchmark.num_func, args.rep))
