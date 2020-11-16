@@ -7,9 +7,6 @@ cec17_extension = Extension(
     sources=["cec17.pyx"],
     libraries=["cec17"],
     library_dirs=["lib"],
-    include_dirs=["lib"]
+    include_dirs=["lib"],
 )
-setup(
-    name="cec17",
-    ext_modules=cythonize([cec17_extension])
-)
+setup(name="cec17", ext_modules=cythonize([cec17_extension]))

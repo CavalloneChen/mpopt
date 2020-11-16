@@ -7,9 +7,6 @@ cec13_extension = Extension(
     sources=["cec13.pyx"],
     libraries=["cec13"],
     library_dirs=["lib"],
-    include_dirs=["lib"]
+    include_dirs=["lib"],
 )
-setup(
-    name="cec13",
-    ext_modules=cythonize([cec13_extension])
-)
+setup(name="cec13", ext_modules=cythonize([cec13_extension]))

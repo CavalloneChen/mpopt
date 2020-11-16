@@ -8,19 +8,22 @@ from mpopt.benchmarks.benchmark import Benchmark
 
 
 def test_benchmark():
-    bcn = ['CEC13', 'CEC17', 'CEC20']
-    bcs = [Benchmark('CEC13'), Benchmark('CEC17'), Benchmark('CEC20')]
 
     # testing parameters
     repetition = 100
     batch_size = 300
 
-    for idx in range(3):
-        name = bcn[idx]
-        bc = bcs[idx]
+    for name in ['CEC13', 'CEC17', 'CEC20']:
+        if name == 'CEC20':
+            dims = [10, 15, 20]
+        else:
+            dims = [30, 50, 100]
 
-        for dim in bc.dims:
+        for dim in dims:
+            bc = Benchmark(name, dim)
+
             for func_id in range(bc.num_func):
+
                 evaluator = bc.generate(func_id, dim)
 
                 ### test of single evaluation
@@ -31,11 +34,19 @@ def test_benchmark():
 
                 t1 = time.time()
                 for rep in range(repetition):
-                    y = evaluator(samples[idx])
+                    y = evaluator(samples[rep])
 
                 t2 = time.time()
 
-                print("{}. Dim: {}, Func_id: {}, SingleSolution, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
+                print(
+                    "{}. Dim: {}, Func_id: {}, SingleSolution, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(
+                        name,
+                        dim,
+                        func_id+1,
+                        (t1 - t0) / repetition,
+                        (t2 - t1) / repetition,
+                    )
+                )
 
                 #### test of batch evaluation
                 t0 = time.time()
@@ -45,12 +56,20 @@ def test_benchmark():
 
                 t1 = time.time()
                 for rep in range(repetition):
-                    y = evaluator(samples[idx])
+                    y = evaluator(samples[rep])
 
                 t2 = time.time()
 
-                print("{}. Dim: {}, Func_id: {}, BatchSolutions, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(name, dim, func_id, (t1-t0)/repetition, (t2-t1)/repetition))
+                print(
+                    "{}. Dim: {}, Func_id: {}, BatchSolutions, AveSampleTime: {:.3e}, AveEvalTime: {:.3e}".format(
+                        name,
+                        dim,
+                        func_id+1,
+                        (t1 - t0) / repetition,
+                        (t2 - t1) / repetition,
+                    )
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_benchmark()
