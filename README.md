@@ -97,7 +97,7 @@ The evaluator holds the setting of optimization task and record states during th
 ```python
 lb = evaluator.obj.lb
 ub = evaluator.obj.ub
-dim = evaluator.obj.
+dim = evaluator.obj.dim
 sample_num = 10
 while not evaluator.terminate():
     rand_samples = np.random.uniform(lb, ub, [sample_num, dim])
