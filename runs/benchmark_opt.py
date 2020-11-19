@@ -118,8 +118,6 @@ if __name__ == "__main__":
     info["optimals"] = res.tolist()
     info["times"] = cst.tolist()
 
-    print(info["optimals"])
-
     if args.name is not '':
         args.name = '_' + args.name
     dir_path = os.path.split(os.path.realpath(__file__))[0]
