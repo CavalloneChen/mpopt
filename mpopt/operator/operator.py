@@ -52,6 +52,11 @@ def guided_mutate(idv, spk_pop, spk_fit, gm_ratio, remap=random_map):
 
 """ Selection Methods """
 # Elite Selection
-def elite_select(pop, fit):
-    min_idx = np.argmin(fit)
-    return pop[min_idx, :], fit[min_idx]
+def elite_select(pop, fit, topk=1):
+    if topk == 1:
+        min_idx = np.argmin(fit)
+        return pop[min_idx, :], fit[min_idx]
+    else:
+        sort_idx = np.argsort(fit)
+        top_idx = sort_idx[:topk]
+        return pop[top_idx, :], fit[top_idx]

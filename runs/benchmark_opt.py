@@ -38,11 +38,12 @@ def parsing():
     )
 
     # results handling
+    """
     parser.add_argument(
         "--precision", default=1e-8, type=float, help="Precision in results comparing"
     )
     parser.add_argument("--alpha", default=0.05, type=float, help="Significant Level")
-
+    """
     return parser.parse_args()
 
 
@@ -58,6 +59,7 @@ def logging(opt):
                 func_id + 1, val, end - start
             )
         )
+
         return val, end - start
 
     return opt_with_logging
@@ -115,6 +117,8 @@ if __name__ == "__main__":
     info["params"] = params
     info["optimals"] = res.tolist()
     info["times"] = cst.tolist()
+
+    print(info["optimals"])
 
     if args.name is not '':
         args.name = '_' + args.name

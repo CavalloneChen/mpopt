@@ -46,7 +46,7 @@ class LoTFWA(object):
     def optimize(self, e):
         
         self.init(e)
-        
+  
         while not e.terminate():
             
             # explode
@@ -84,7 +84,7 @@ class LoTFWA(object):
             self.pop = n_pop
             self.fit = n_fit
 
-        return e.cur_y
+        return e.best_y
 
     def init(self, e):
 
