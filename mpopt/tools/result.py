@@ -15,21 +15,22 @@ import numpy as np
 import scipy.stats
 from prettytable import PrettyTable
 
-from ..benchmarks.benchmark import Benchmark
+from mpopt.benchmarks.benchmark import Benchmark
 
 
 def parsing():
     parser = argparse.ArgumentParser()
     parser.add_argument("paths", nargs="+", help="Paths for compared algorithms")
+    parser.add_argument("--dim", "-d", default=None, type=int, help="Dimension of benchmark")
     parser.add_argument(
-        "-b", "--benchmark", default=None, help="Name of tested benchmark"
+        "--benchmark", "-b", default=None, help="Name of tested benchmark"
     )
     parser.add_argument(
-        "-p", "--precision", default="1e-8", help="Precision in comparation"
+        "--precision", "-p", default="1e-8", type=float, help="Precision in comparation"
     )
     parser.add_argument(
-        "-a",
         "--alpha",
+        "-a",
         default=0.05,
         help="Significant level for statistical comparation",
     )
@@ -43,7 +44,7 @@ def show_results(*paths, benchmark=None, **kwargs):
     num_result = len(paths)
 
     if num_result == 2:
-        stas_compare(*paths, benchmark=benchmark, **kwargs)
+        stats_compare(*paths, benchmark=benchmark, **kwargs)
     elif num_result > 2:
         average_rank(*paths, benchmark=None, **kwargs)
     else:
@@ -74,8 +75,8 @@ def stats_compare(*paths, benchmark=None, **kwargs):
     p_values = []
     signs = []
 
-    err1 = fit1 - benchmark.bias[np.newaxis, :]
-    err2 = fit2 - benchmark.bias[np.newaxis, :]
+    err1 = fit1 - benchmark.bias[:, np.newaxis]
+    err2 = fit2 - benchmark.bias[:, np.newaxis]
 
     mean1 = err1.mean(axis=1)
     mean2 = err2.mean(axis=1)
@@ -88,9 +89,9 @@ def stats_compare(*paths, benchmark=None, **kwargs):
         if p >= alpha:
             signs.append("=")
         else:
-            if err1[idx] - err2[idx] > precision:
+            if mean1[idx] - mean2[idx] > precision:
                 signs.append("-")
-            elif err2[idx] - err1[idx] > precision:
+            elif mean2[idx] - mean1[idx] > precision:
                 signs.append("+")
             else:
                 signs.append("=")
@@ -129,7 +130,7 @@ def stats_compare(*paths, benchmark=None, **kwargs):
                 row[idx] = "\033[1;32m" + row[idx] + "\033[0m"
         tb.add_row(row)
     print("Comparing on {}: alg1: {}, alg2: {}".format(benchmark.name, name1, name2))
-    print("Win: {}, Lose: {} (for alg2).".format(win, lose))
+    print("Win: {}, Lose: {}".format(win, lose))
     print(tb)
 
 
@@ -145,6 +146,8 @@ def average_rank(*paths, benchmark=None, **kwargs):
         else 1e-8
     )
 
+    prob_name = benchmark.name if benchmark is not None else "Provided"
+
     # read data
     num_alg = len(paths)
     names = []
@@ -158,24 +161,24 @@ def average_rank(*paths, benchmark=None, **kwargs):
         fits.append(fit)
 
     # compute means and stds
+
     means = np.array(
         [
-            [np.mean(fits[i][j, :]) for j in range(benchmark.num_func)]
+            [np.mean(fits[i][j]) for j in range(benchmark.num_func)]
             for i in range(num_alg)
         ]
     )
     stds = np.array(
         [
-            [np.std(fits[i][j, :]) for j in range(benchmark.num_func)]
-            for j in range(num_alg)
+            [np.std(fits[i][j]) for j in range(benchmark.num_func)]
+            for i in range(num_alg)
         ]
     )
 
     # compute ranks
-    ranks = np.zeros(benchmark.num_func, num_alg)
+    ranks = np.zeros((benchmark.num_func, num_alg))
     for idx in range(benchmark.num_func):
-        means = [np.mean(_[idx, :]) for _ in fits]
-        ranks[idx, :] = ranking(means, precision)
+        ranks[idx, :] = ranking(means[:,idx], precision)
 
     # print table
     tb = PrettyTable()
@@ -188,6 +191,7 @@ def average_rank(*paths, benchmark=None, **kwargs):
     for benchmark_idx in range(benchmark.num_func):
         row = [str(benchmark_idx + 1)]
         for alg_idx in range(num_alg):
+
             tmp = [
                 "{:.3e}".format(means[alg_idx, benchmark_idx]),
                 "{:.3e}".format(stds[alg_idx, benchmark_idx]),
@@ -207,7 +211,7 @@ def average_rank(*paths, benchmark=None, **kwargs):
         rank_row += ["{:.2f}".format(ave_rank[alg_idx]), ""]
     tb.add_row(rank_row)
 
-    print("Comparing on {}:".format(prob))
+    print("Comparing on {}:".format(prob_name))
     print(tb)
 
 
@@ -234,11 +238,13 @@ def ranking(scores, precision):
 
 def load_result(path):
     with open(path, "r") as f:
-        res = json.loads(path)
+        data = json.load(f)
 
-    name = res["alg_name"]
-    fits = res["fits"]
-    times = res["times"]
+    name = data["args"]["alg"]
+    if data["args"]["name"] is not "":
+        name += "_" + data["args"]["name"]
+    fits = data["optimals"]
+    times = data["times"]
 
     return name, fits, times
 
@@ -247,28 +253,24 @@ if __name__ == "__main__":
 
     args = parsing()
 
-    # alias
-    paths = args["paths"]
-    alpha = args["alpha"] if "alpha" in args else None
-    precision = args["precision"] if "precision" in args else None
-
-    if benchmark is not None:
-        benchmark = Benchmark(benchmark)
+    if args.benchmark is not None:
+        benchmark = Benchmark(args.benchmark, args.dim)
     else:
-        # TODO: create a empty benchmark
-        pass
+        benchmark = None
 
     # handle paths
-    if len(paths) == 1:
+    if len(args.paths) == 1:
         # compare all json results in the directory
-        dir_path = paths[0]
+        dir_path = args.paths[0]
         filenames = os.listdir(dir_path)
         paths = [os.path.join(dir_path, filename) for filename in filenames]
+    else:
+        paths = args.paths
 
     # cases entry
     if len(paths) < 2:
         raise Exception("Not enough results to compare.")
     elif len(paths) == 2:
-        stats_compare(*paths, benchmark=benchmark, precision=precision, alpha=alpha)
+        stats_compare(*paths, benchmark=benchmark, precision=args.precision, alpha=args.alpha)
     else:
-        average_rank(*paths, benchmark=benchmark, precision=precision)
+        average_rank(*paths, benchmark=benchmark, precision=args.precision)

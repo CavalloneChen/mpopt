@@ -141,7 +141,7 @@ class Evaluator(object):
             min_idx = np.argmin(y)
             min_x = X[min_idx, :]
             min_y = y[min_idx]
-
+            
             if self.cur_y is None or min_y < self.cur_y:
                 self.cur_x = min_x
                 self.cur_y = min_y

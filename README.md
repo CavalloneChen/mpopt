@@ -4,7 +4,7 @@
 
 `mpopt` is a flexible framework for complex optimization tasks by managing multiple populations.
 
-> **Note:** We only consider **Continuous**, **Black-Box**, **Minimization** optimization problems.
+> **Note:** We only consider **Bound-Constrained**, **Continuous**, **Black-Box**, **Minimization** optimization problems.
 
 The repository contains:
 
