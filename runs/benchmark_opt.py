@@ -23,6 +23,7 @@ def parsing():
 
     # agortihm params
     parser.add_argument("--alg", "-a", help="Algorithm name")
+    parser.add_argument('--apd', "--algparams_dict", default="{}", help="Algorithm parameters diction.")
 
     # testing params
     parser.add_argument("--name", "-n", default="", help="Name of experiment")
@@ -79,9 +80,10 @@ if __name__ == "__main__":
 
     # get algorithm params and update to provided params
     params = optimizer.default_params(benchmark=benchmark)
+    in_params = eval(args.apd)
     for param in params:
-        if param in args:
-            params[param] = args[param]
+        if param in in_params:
+            params[param] = in_params[param]
 
     # opt function
     @logging

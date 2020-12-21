@@ -40,7 +40,7 @@ class Benchmark(object):
             self.ub = 100
 
         elif benchmark == "CEC17":
-            if self.dim not in [10, 30, 50, 100]:
+            if self.dim not in [2, 10, 30, 50, 100]:
                 raise Exception("Benchmark CEC17 do not support dimension {}.".format(self.dim))
             self.max_eval = 10000 * self.dim
             
@@ -54,7 +54,7 @@ class Benchmark(object):
             self.ub = 100
 
         elif benchmark == "CEC20":
-            if self.dim not in [10, 15, 20]:
+            if self.dim not in [2, 10, 15, 20]:
                 raise Exception("Benchmark CEC20 do not support dimension {}.".format(self.dim))
             if self.dim == 10:
                 self.max_eval = 1000000
@@ -62,6 +62,8 @@ class Benchmark(object):
                 self.max_eval = 3000000
             elif self.dim == 20:
                 self.max_eval = 10000000
+            else:
+                self.max_eval = 1000000
 
             self.num_func = 10
             self.funcs = [

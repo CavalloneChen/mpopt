@@ -2,3 +2,5 @@
 *.json
 *.egg-info
 .vscode
+notebooks
+related_methods

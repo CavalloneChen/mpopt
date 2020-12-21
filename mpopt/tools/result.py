@@ -160,11 +160,16 @@ def average_rank(*paths, benchmark=None, **kwargs):
         times.append(time)
         fits.append(fit)
 
+    errs = []
+    for i in range(num_alg):
+        err = fits[i] - benchmark.bias[:, np.newaxis]
+        errs.append(err)
+
     # compute means and stds
 
     means = np.array(
         [
-            [np.mean(fits[i][j]) for j in range(benchmark.num_func)]
+            [np.mean(errs[i][j]) for j in range(benchmark.num_func)]
             for i in range(num_alg)
         ]
     )
