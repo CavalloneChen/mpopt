@@ -2,6 +2,10 @@
 
 import numpy as np
 
+from mpopt.tools.distribution import MultiVariateNormalDistribution as MVND
+
+lb = -float('inf')
+ub = float('inf')
 
 """ Mapping Rules """
 # Random Re-map
@@ -29,8 +33,9 @@ def box_explode(idv, amp, num_spk, remap=random_map):
     spks = remap(spks)
     return spks
 
-def gaussian_explode(idv, sigma, C, num_spk, remap=random_map):
-    pass
+def gaussian_explode(mvnd, nspk, remap=random_map):
+    return mvnd.sample(nspk, remap)
+    
 
 """ Mutation Methods """
 # Guided Mutation

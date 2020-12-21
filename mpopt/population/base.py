@@ -2,15 +2,10 @@ import numpy as np
 
 from ..operator import operator as opt
 
+
 class BasePop(object):
     """ Base class for population """
-    def __init__(self, pop, fit, **kwargs):
-        """ Innitializing a population
-
-        Args:
-            pop (np.ndarray): must be shaped [num_pop, dim,]
-            fit (np.ndarray): must be shaped [dim,]
-        """
+    def __init__(self, pop, fit, lb=-float('inf'), ub=float('inf')):
         # init pop
         self.pop = pop
         self.fit = fit
@@ -19,96 +14,130 @@ class BasePop(object):
         self.new_pop = None
         self.new_fit = None
 
-        # load params and states
-        for kw in kwargs:
-            setattr(self, kw, kwargs[kw])
-        
-        # alias
-        if 'num_pop' not in self.__dict__:
-            self.num_pop = self.pop.shape[0]
-        if 'dim' not in self.__dict__:
-            self.dim = self.pop.shape[1]
+        # params
+        self.size = self.pop.shape[0]
+        self.dim = self.pop.shape[1]
+        self.lb = lb
+        self.ub = ub
 
-    def eval(self, e):
-        self.gen_fit = e(self.gen_pop)
+        # states
+        # no states here
 
     def remap(self, samples):
-        lb = self.lb if 'lb' in self.__dict__ else -float('inf')
-        ub = self.ub if 'ub' in self.__dict__ else float('int')
-        return opt.random_map(samples, lb=lb, ub=ub)
+        """ Always apply random_map on out-bounded samples """
+        return opt.random_map(samples, self.lb, self.ub)
+        
+    def eval(self, e):
+        """ Evaluate un-evaluated individuals here """
+        raise NotImplementedError
 
     def select(self):
-        tot_pop = np.vstack(self.pop, self.gen_pop)
-        tot_fit = np.concatenate([self.fit, self.gen_fit])
-        self.new_pop, self.new_fit = opt.elite_select(tot_pop, tot_fit)
+        """ Select 'new_pop' and 'new_fit' """
+        raise NotImplementedError
 
     def generate(self):
+        """ Generate offsprings """
+        raise NotImplementedError
+
+    def adapt(self):
+        """ Adapt new states """
         raise NotImplementedError
 
     def update(self):
-        self.pop = self.new_pop
-        self.fit = self.new_fit
-    
-    def evolve(self, e):
-        self.generate()
-        self.eval(e)
-        self.select()
-        self.update()
+        """ Update pop and states """
+        raise NotImplementedError
 
+    def evolve(self):
+        """ Define the evolve process in an iteration """
+        raise NotImplementedError
+
+class BaseEDAPop(object):
+    """ Base class for EDA (Estimation of Distribution Algorithms) population """
+    def __init__(self, dist, dim=None, lb=-float('inf'), ub=float('inf')):
+        # init pop
+        self.pop = None
+        self.fit = None
+        self.dist = dist
+        self.new_dist = None
+
+        # params
+        self.dim = dim if dim is not None else dist.dim
+        self.lb = lb
+        self.ub = ub
+
+        # states
+        # no states here
+
+    def remap(self, samples):
+        """ Always apply random_map on out-bounded samples """
+        return opt.random_map(samples, self.lb, self.ub)
+
+    def eval(self, e):
+        self.fit = e(self.pop)
+
+    def sample(self, num_sample):
+        """ Sample population from the distribution """
+        raise NotImplementedError
+
+    def adapt(self):
+        """ Adapt the distribution """
+        raise NotImplementedError
+    
+    def update(self):
+        """ Update the distribution with adapted one """
+        raise NotImplementedError
+
+    def evolve(self):
+        """ Define the evolve process in an iteration """
+        raise NotImplementedError
 
 class BaseFirework(object):
-    """ Base class for firework """
-    def __init__(self, idv, val, **kwargs):
-        """ Initializing a firework
-
-        Args:
-            idv (np.ndarray):   idv.shape = [dim,]
-            val (float):        fitness value of idv
-        """
+    """ Base Class for Fireworks """
+    def __init__(self, idv, val, lb=-float('inf'), ub=float('inf')):
         # init pop
         self.idv = idv
         self.val = val
-        self.spk = None
+        self.spk_pop = None
         self.spk_fit = None
         self.new_idv = None
         self.new_val = None
-
-        # load params and states
-        for kw in kwargs:
-            setattr(self, kw, kwargs[kw])
         
-        # alias
-        if 'dim' not in self.__dict__:
-            self.dim = self.idv.shape[0]
+        # params
+        self.dim = self.idv.shape[0]
+        self.lb = lb
+        self.ub = ub
 
+        # states
+        # No states here
+    
     def eval(self, e):
-        self.spk_fit = e(self.spk)
-    
+        """ Eval un-evaluated individuals here """
+        raise NotImplementedError
+
     def remap(self, samples):
-        lb = self.lb if 'lb' in self.__dict__ else -float('inf') #pylint: disable-msg=no-member
-        ub = self.ub if 'ub' in self.__dict__ else float('int') #pylint: disable-msg=no-member
-        return opt.random_map(samples, lb=lb, ub=ub)
-    
+        """ Always apply random_map on out-bounded samples """
+        return opt.random_map(samples, self.lb, self.ub)
+
     def select(self):
-        tot_pop = np.vstack([self.idv, self.spk])
-        tot_fit = np.concatenate([np.array([self.val]), self.spk_fit])
-        self.new_idv, self.new_val = opt.elite_select(tot_pop, tot_fit)
+        """ Select 'new_pop' and 'new_fit' """
+        raise NotImplementedError
 
-    def explode(self, amp=None, num_spk=None):
-        if amp is None and 'amp' in self.__dict__:
-            amp = self.amp #pylint: disable-msg=no-member
-        if num_spk is None and 'num_spk' in self.__dict__:
-            num_spk = self.num_spk #pylint: disable-msg=no-member
+    def explode(self):
+        """ Generate explosion sparks """
+        raise NotImplementedError
 
-        self.spk = opt.box_explode(self.idv, amp, num_spk, remap=self.remap)
+    def mutate(self):
+        """ Generate mutation sparks """
+        raise NotImplementedError
 
+    def adapt(self):
+        """ Adapt new states """
+        raise NotImplementedError
+    
     def update(self):
-        self.idv = self.new_idv
-        self.val = self.new_val
+        """ Update pop and states """
+        raise NotImplementedError
 
-    def evolve(self, e):
-        self.explode()
-        self.eval(e)
-        self.select()
-        self.update()
-
+    def evolve(self):
+        """ Define the evolve process in an iteration """
+        raise NotImplementedError
